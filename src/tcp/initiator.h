@@ -1,12 +1,12 @@
-#ifndef CFIX_TCP_CLIENT_H
-#define CFIX_TCP_CLIENT_H
+#ifndef CFIX_TCP_INITIATOR_H
+#define CFIX_TCP_INITIATOR_H
 
-#include "cfix/client.h"
+#include "cfix/initiator.h"
 
 /******************************************************************************/
 /* Methods                                                                    */
 /******************************************************************************/
 
-cfix_client_t *cfix_tcp_client_create(const cfix_clientargs_t *args);
+cfix_initiator_t *cfix_tcp_initiator_create(const cfix_initiatorargs_t *args);
 
-#endif // CFIX_TCP_CLIENT_H
+#endif // CFIX_TCP_INITIATOR_H

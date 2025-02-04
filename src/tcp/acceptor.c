@@ -1,7 +1,7 @@
-#include "./server.h"
-#include "../memory.h"
+#include "./acceptor.h"
 #include "./close.h"
 #include "./transport.h"
+#include "cfix/memory.h"
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -14,57 +14,57 @@
 /* Typedefs                                                                   */
 /******************************************************************************/
 
-typedef struct cfix_tcp_server_s cfix_tcp_server_t;
+typedef struct cfix_tcp_acceptor_s cfix_tcp_acceptor_t;
 
 /******************************************************************************/
 /* Structs                                                                    */
 /******************************************************************************/
 
-struct cfix_tcp_server_s
+struct cfix_tcp_acceptor_s
 {
-    cfix_server_t           base;
-    char                    host[BUFSIZ];
-    char                    port[BUFSIZ];
-    pthread_t               thread;
-    int                     socket;
-    cfix_server_on_client_t on_client;
-    void                   *on_client_user_data;
+    cfix_acceptor_t              base;
+    char                         host[BUFSIZ];
+    char                         port[BUFSIZ];
+    pthread_t                    thread;
+    int                          socket;
+    cfix_acceptor_on_transport_t on_transpoort;
+    void                        *on_transport_user_data;
 };
 
-int   cfix_tcp_server_create_socket(cfix_tcp_server_t *self);
-int   cfix_tcp_server_start(cfix_tcp_server_t *self);
-void  cfix_tcp_server_stop(cfix_tcp_server_t *self);
-void *cfix_tcp_server_thread_main(void *data);
+int   cfix_tcp_acceptor_create_socket(cfix_tcp_acceptor_t *self);
+int   cfix_tcp_acceptor_start(cfix_tcp_acceptor_t *self);
+void  cfix_tcp_acceptor_stop(cfix_tcp_acceptor_t *self);
+void *cfix_tcp_acceptor_thread_main(void *data);
 
 /******************************************************************************/
 /* Methods                                                                    */
 /******************************************************************************/
 
-cfix_server_t *cfix_tcp_server_create(const cfix_serverargs_t *args)
+cfix_acceptor_t *cfix_tcp_acceptor_create(const cfix_acceptorargs_t *args)
 {
-    cfix_tcp_server_t *self;
+    cfix_tcp_acceptor_t *self;
     NEW(self);
     if (self)
     {
-        self->base = (cfix_server_t){
-            .start = (cfix_server_start_t)(cfix_tcp_server_start),
-            .stop = (cfix_server_stop_t)(cfix_tcp_server_stop),
+        self->base = (cfix_acceptor_t){
+            .start = (cfix_acceptor_start_t)(cfix_tcp_acceptor_start),
+            .stop = (cfix_acceptor_stop_t)(cfix_tcp_acceptor_stop),
         };
         strncpy(self->host, args->host, sizeof(self->host));
         strncpy(self->port, args->port, sizeof(self->port));
         self->socket = -1;
-        self->on_client = args->on_client;
-        self->on_client_user_data = args->on_client_user_data;
+        self->on_transpoort = args->on_transport;
+        self->on_transport_user_data = args->on_transport_user_data;
     }
 
-    return (cfix_server_t *)(self);
+    return (cfix_acceptor_t *)(self);
 }
 
 /******************************************************************************/
 /* Static                                                                     */
 /******************************************************************************/
 
-int cfix_tcp_server_create_socket(cfix_tcp_server_t *self)
+int cfix_tcp_acceptor_create_socket(cfix_tcp_acceptor_t *self)
 {
     struct addrinfo hints, *addrs;
     CLEAR(&hints);
@@ -125,15 +125,15 @@ int cfix_tcp_server_create_socket(cfix_tcp_server_t *self)
     return ret;
 }
 
-int cfix_tcp_server_start(cfix_tcp_server_t *self)
+int cfix_tcp_acceptor_start(cfix_tcp_acceptor_t *self)
 {
-    self->socket = cfix_tcp_server_create_socket(self);
+    self->socket = cfix_tcp_acceptor_create_socket(self);
     if (self->socket < 0)
     {
         return -1;
     }
 
-    int ret = pthread_create(&self->thread, NULL, cfix_tcp_server_thread_main, (void *)(self));
+    int ret = pthread_create(&self->thread, NULL, cfix_tcp_acceptor_thread_main, (void *)(self));
     if (ret < 0)
     {
         return -1;
@@ -142,7 +142,7 @@ int cfix_tcp_server_start(cfix_tcp_server_t *self)
     return 0;
 }
 
-void cfix_tcp_server_stop(cfix_tcp_server_t *self)
+void cfix_tcp_acceptor_stop(cfix_tcp_acceptor_t *self)
 {
     if (self->socket > 0)
     {
@@ -158,9 +158,9 @@ void cfix_tcp_server_stop(cfix_tcp_server_t *self)
     }
 }
 
-void *cfix_tcp_server_thread_main(void *data)
+void *cfix_tcp_acceptor_thread_main(void *data)
 {
-    cfix_tcp_server_t *self = (cfix_tcp_server_t *)(data);
+    cfix_tcp_acceptor_t *self = (cfix_tcp_acceptor_t *)(data);
     while (1)
     {
         int socket = accept(self->socket, NULL, NULL);
@@ -178,7 +178,7 @@ void *cfix_tcp_server_thread_main(void *data)
             continue;
         }
 
-        self->on_client((cfix_transport_t *)(transport), self->on_client_user_data);
+        self->on_transpoort((cfix_transport_t *)(transport), self->on_transport_user_data);
     }
 
     return NULL;

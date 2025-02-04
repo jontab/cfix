@@ -1,7 +1,7 @@
-#include "memory.h"
+#include "cfix/memory.h"
 #include "munit.h"
-#include "tcp/client.h"
-#include "tcp/server.h"
+#include "tcp/acceptor.h"
+#include "tcp/initiator.h"
 #include <pthread.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -10,26 +10,26 @@
 /* Typedefs                                                                   */
 /******************************************************************************/
 
-typedef struct unit_tcp_server_context_s unit_tcp_server_context_t;
+typedef struct unit_tcp_acceptor_context_s unit_tcp_acceptor_context_t;
 
 /******************************************************************************/
 /* Structs                                                                   */
 /******************************************************************************/
 
-struct unit_tcp_server_context_s
+struct unit_tcp_acceptor_context_s
 {
     bool            is_done;
     pthread_mutex_t lock;
     pthread_cond_t  wake;
 };
 
-MunitResult unit_tcp_server_start(const MunitParameter params[], void *fixture);
-void        unit_tcp_server_start_server_on_client(cfix_transport_t *transport, void *user_data);
-void        unit_tcp_server_start_client_on_client(cfix_transport_t *transport, void *user_data);
-void        unit_tcp_server_context_wait(unit_tcp_server_context_t *context);
+MunitResult unit_tcp_acceptor_start(const MunitParameter params[], void *fixture);
+void        unit_tcp_acceptor_start_acceptor_on_transport(cfix_transport_t *transport, void *user_data);
+void        unit_tcp_acceptor_start_initiator_on_transport(cfix_transport_t *transport, void *user_data);
+void        unit_tcp_acceptor_context_wait(unit_tcp_acceptor_context_t *context);
 
-MunitTest unit_tcp_server_tests[] = {
-    {"/start", unit_tcp_server_start, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+MunitTest unit_tcp_acceptor_tests[] = {
+    {"/start", unit_tcp_acceptor_start, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
     {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
 };
 
@@ -37,48 +37,48 @@ MunitTest unit_tcp_server_tests[] = {
 /* Methods                                                                    */
 /******************************************************************************/
 
-MunitResult unit_tcp_server_start(const MunitParameter params[], void *fixture)
+MunitResult unit_tcp_acceptor_start(const MunitParameter params[], void *fixture)
 {
     const char *host = "0.0.0.0";
     const char *port = "8080";
 
-    unit_tcp_server_context_t context;
+    unit_tcp_acceptor_context_t context;
     context.is_done = false;
     munit_assert_int(pthread_mutex_init(&context.lock, NULL), >=, 0);
     munit_assert_int(pthread_cond_init(&context.wake, NULL), >=, 0);
 
     //
-    cfix_server_t *server = cfix_tcp_server_create(&(cfix_serverargs_t){
+    cfix_acceptor_t  *acceptor = cfix_tcp_acceptor_create(&(cfix_acceptorargs_t){
+         .host = host,
+         .port = port,
+         .on_transport = unit_tcp_acceptor_start_acceptor_on_transport,
+         .on_transport_user_data = &context,
+    });
+    cfix_initiator_t *initiator = cfix_tcp_initiator_create(&(cfix_initiatorargs_t){
         .host = host,
         .port = port,
-        .on_client = unit_tcp_server_start_server_on_client,
-        .on_client_user_data = &context,
+        .on_transport = unit_tcp_acceptor_start_initiator_on_transport,
+        .on_transport_user_data = &context,
     });
-    cfix_client_t *client = cfix_tcp_client_create(&(cfix_clientargs_t){
-        .host = host,
-        .port = port,
-        .on_client = unit_tcp_server_start_client_on_client,
-        .on_client_user_data = &context,
-    });
-    munit_assert_ptr_not_null(server);
-    munit_assert_ptr_not_null(client);
+    munit_assert_ptr_not_null(acceptor);
+    munit_assert_ptr_not_null(initiator);
 
     //
-    munit_assert_int(cfix_server_start(server), ==, 0);
-    munit_assert_int(cfix_client_start(client), ==, 0);
+    munit_assert_int(cfix_acceptor_start(acceptor), ==, 0);
+    munit_assert_int(cfix_initiator_start(initiator), ==, 0);
     sleep(1);
-    unit_tcp_server_context_wait(&context);
+    unit_tcp_acceptor_context_wait(&context);
 
     //
-    cfix_server_stop(server);
-    cfix_client_stop(client);
-    DELETE(server, free);
+    cfix_acceptor_stop(acceptor);
+    cfix_initiator_stop(initiator);
+    DELETE(acceptor, free);
     return MUNIT_OK;
 }
 
-void unit_tcp_server_start_server_on_client(cfix_transport_t *transport, void *user_data)
+void unit_tcp_acceptor_start_acceptor_on_transport(cfix_transport_t *transport, void *user_data)
 {
-    unit_tcp_server_context_t *context = (unit_tcp_server_context_t *)(user_data);
+    unit_tcp_acceptor_context_t *context = (unit_tcp_acceptor_context_t *)(user_data);
 
     //
     char ch;
@@ -95,13 +95,13 @@ void unit_tcp_server_start_server_on_client(cfix_transport_t *transport, void *u
     cfix_transport_free(transport);
 }
 
-void unit_tcp_server_start_client_on_client(cfix_transport_t *transport, void *user_data)
+void unit_tcp_acceptor_start_initiator_on_transport(cfix_transport_t *transport, void *user_data)
 {
     munit_assert_int(cfix_transport_send(transport, "a", 1), ==, 0);
     cfix_transport_free(transport);
 }
 
-void unit_tcp_server_context_wait(unit_tcp_server_context_t *context)
+void unit_tcp_acceptor_context_wait(unit_tcp_acceptor_context_t *context)
 {
     munit_assert_int(pthread_mutex_lock(&context->lock), >=, 0);
     while (!context->is_done)

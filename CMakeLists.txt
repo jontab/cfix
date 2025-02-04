@@ -5,24 +5,30 @@ set(CMAKE_C_FLAGS_DEBUG "-Wall -Werror -pedantic -O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-Wall -Werror -pedantic -O3")
 
 set(LIB_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/client.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/server.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/acceptor.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/initiator.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/transport.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/client.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/server.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/acceptor.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/initiator.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/string.c)
 
 set(LIB_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/client.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/server.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/acceptor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/initiator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/list.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/memory.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/message.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/session.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/string.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/transport.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/client.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/server.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/transport.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/memory.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/acceptor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/close.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/initiator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/transport.h)
 
 set(TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/main.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_tcp_server.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_tcp_acceptor.c
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/munit/munit.c)
 
 set(TESTS_HEADERS

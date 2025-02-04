@@ -1,12 +1,12 @@
-#ifndef CFIX_TCP_SERVER_H
-#define CFIX_TCP_SERVER_H
+#ifndef CFIX_TCP_ACCEPTOR_H
+#define CFIX_TCP_ACCEPTOR_H
 
-#include "cfix/server.h"
+#include "cfix/acceptor.h"
 
 /******************************************************************************/
 /* Methods                                                                    */
 /******************************************************************************/
 
-cfix_server_t *cfix_tcp_server_create(const cfix_serverargs_t *args);
+cfix_acceptor_t *cfix_tcp_acceptor_create(const cfix_acceptorargs_t *args);
 
-#endif // CFIX_TCP_SERVER_H
+#endif // CFIX_TCP_ACCEPTOR_H

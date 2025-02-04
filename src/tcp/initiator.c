@@ -1,7 +1,7 @@
-#include "./client.h"
-#include "../memory.h"
+#include "./initiator.h"
 #include "./close.h"
 #include "./transport.h"
+#include "cfix/memory.h"
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -21,53 +21,53 @@
 /* Typedefs                                                                   */
 /******************************************************************************/
 
-typedef struct cfix_tcp_client_s cfix_tcp_client_t;
+typedef struct cfix_tcp_initiator_s cfix_tcp_initiator_t;
 
 /******************************************************************************/
 /* Structs                                                                    */
 /******************************************************************************/
 
-struct cfix_tcp_client_s
+struct cfix_tcp_initiator_s
 {
-    cfix_client_t           base;
-    char                    host[BUFSIZ];
-    char                    port[BUFSIZ];
-    cfix_client_on_client_t on_client;
-    void                   *on_client_user_data;
+    cfix_initiator_t              base;
+    char                          host[BUFSIZ];
+    char                          port[BUFSIZ];
+    cfix_initiator_on_transport_t on_transport;
+    void                         *on_transport_user_data;
 };
 
-int  cfix_tcp_client_create_socket(cfix_tcp_client_t *self);
-int  cfix_tcp_client_start(cfix_tcp_client_t *self);
-void cfix_tcp_client_stop(cfix_tcp_client_t *self);
+int  cfix_tcp_initiator_create_socket(cfix_tcp_initiator_t *self);
+int  cfix_tcp_initiator_start(cfix_tcp_initiator_t *self);
+void cfix_tcp_initiator_stop(cfix_tcp_initiator_t *self);
 
 /******************************************************************************/
 /* Methods                                                                    */
 /******************************************************************************/
 
-cfix_client_t *cfix_tcp_client_create(const cfix_clientargs_t *args)
+cfix_initiator_t *cfix_tcp_initiator_create(const cfix_initiatorargs_t *args)
 {
-    cfix_tcp_client_t *self;
+    cfix_tcp_initiator_t *self;
     NEW(self);
     if (self)
     {
-        self->base = (cfix_client_t){
-            .start = (cfix_client_start_t)(cfix_tcp_client_start),
-            .stop = (cfix_client_stop_t)(cfix_tcp_client_stop),
+        self->base = (cfix_initiator_t){
+            .start = (cfix_initiator_start_t)(cfix_tcp_initiator_start),
+            .stop = (cfix_initiator_stop_t)(cfix_tcp_initiator_stop),
         };
         strncpy(self->host, args->host, sizeof(self->host));
         strncpy(self->port, args->port, sizeof(self->port));
-        self->on_client = args->on_client;
-        self->on_client_user_data = args->on_client_user_data;
+        self->on_transport = args->on_transport;
+        self->on_transport_user_data = args->on_transport_user_data;
     }
 
-    return (cfix_client_t *)(self);
+    return (cfix_initiator_t *)(self);
 }
 
 /******************************************************************************/
 /* Static                                                                     */
 /******************************************************************************/
 
-int cfix_tcp_client_create_socket(cfix_tcp_client_t *self)
+int cfix_tcp_initiator_create_socket(cfix_tcp_initiator_t *self)
 {
     struct addrinfo hints, *addrs;
     CLEAR(&hints);
@@ -113,9 +113,9 @@ int cfix_tcp_client_create_socket(cfix_tcp_client_t *self)
     return ret;
 }
 
-int cfix_tcp_client_start(cfix_tcp_client_t *self)
+int cfix_tcp_initiator_start(cfix_tcp_initiator_t *self)
 {
-    int socket = cfix_tcp_client_create_socket(self);
+    int socket = cfix_tcp_initiator_create_socket(self);
     if (socket < 0)
     {
         return -1;
@@ -127,11 +127,11 @@ int cfix_tcp_client_start(cfix_tcp_client_t *self)
         return -1;
     }
 
-    self->on_client((cfix_transport_t *)(transport), self->on_client_user_data);
+    self->on_transport((cfix_transport_t *)(transport), self->on_transport_user_data);
     return 0;
 }
 
-void cfix_tcp_client_stop(cfix_tcp_client_t *self)
+void cfix_tcp_initiator_stop(cfix_tcp_initiator_t *self)
 {
     // Nothing!
 }

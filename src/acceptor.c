@@ -1,10 +1,10 @@
-#include "./tcp/server.h"
+#include "./tcp/acceptor.h"
 
 /******************************************************************************/
 /* Methods                                                                    */
 /******************************************************************************/
 
-cfix_server_t *cfix_server_create_default(const cfix_serverargs_t *args)
+cfix_acceptor_t *cfix_acceptor_create_default(const cfix_acceptorargs_t *args)
 {
-    return cfix_tcp_server_create(args);
+    return cfix_tcp_acceptor_create(args);
 }

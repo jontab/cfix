@@ -1,9 +1,9 @@
 #include "munit.h"
 
-extern MunitTest unit_tcp_server_tests[];
+extern MunitTest unit_tcp_acceptor_tests[];
 
 MunitSuite subsuites[] = {
-    {"/tcp_server", unit_tcp_server_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE},
+    {"/tcp_acceptor", unit_tcp_acceptor_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE},
     {NULL, NULL, NULL, 1, MUNIT_SUITE_OPTION_NONE},
 };
 
