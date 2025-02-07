@@ -10,7 +10,9 @@ set(LIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/transport.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/acceptor.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/initiator.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/string.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/message.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/string.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/transport.c)
 
 set(LIB_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/acceptor.h
@@ -27,11 +29,15 @@ set(LIB_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/transport.h)
 
 set(TESTS_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/context.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/main.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_recv_chunker.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_send_chunker.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_tcp_acceptor.c
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/munit/munit.c)
 
 set(TESTS_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/context.h
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/munit/munit.h)
 
 ##

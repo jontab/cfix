@@ -64,7 +64,7 @@
     }                                                                                                                  \
     int PREFIX##_insert(PREFIX##_t *self, TYPE data, int at)                                                           \
     {                                                                                                                  \
-        if (cfix_message_fields_reserve(self, self->size + 1) < 0)                                                     \
+        if (PREFIX##_reserve(self, self->size + 1) < 0)                                                                \
         {                                                                                                              \
             return -1;                                                                                                 \
         }                                                                                                              \

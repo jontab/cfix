@@ -1,43 +1,32 @@
-#ifndef CFIX_MESSAGE_H
-#define CFIX_MESSAGE_H
+#ifndef TEST_CONTEXT_H
+#define TEST_CONTEXT_H
 
-#include "cfix/list.h"
-#include "cfix/string.h"
-#include "cfix/transport.h"
-
-struct cfix_message_field_s;
-
-LIST_GENERATE_HEADER(cfix_message_fields, struct cfix_message_field_s)
+#include <pthread.h>
+#include <stdbool.h>
 
 /******************************************************************************/
 /* Typedefs                                                                   */
 /******************************************************************************/
 
-typedef struct cfix_message_field_s cfix_message_field_t;
-typedef struct cfix_message_s       cfix_message_t;
+typedef struct cfix_test_context_s cfix_test_context_t;
 
 /******************************************************************************/
 /* Structs                                                                    */
 /******************************************************************************/
 
-struct cfix_message_field_s
+struct cfix_test_context_s
 {
-    int           tag;
-    cfix_string_t value;
-};
-
-struct cfix_message_s
-{
-    cfix_message_fields_t header;
-    cfix_message_fields_t body;
-    cfix_message_fields_t trailer;
+    bool            is_done;
+    pthread_mutex_t lock;
+    pthread_cond_t  wake;
 };
 
 /******************************************************************************/
 /* Methods                                                                    */
 /******************************************************************************/
 
-int cfix_message_send(cfix_message_t *self, cfix_transport_t *transport);
-int cfix_message_recv(cfix_message_t *self, cfix_transport_recv_chunker_t *chunker);
+void cfix_test_context_init(cfix_test_context_t *self);
+void cfix_test_context_wait(cfix_test_context_t *self);
+void cfix_test_context_done(cfix_test_context_t *self);
 
-#endif // CFIX_MESSAGE_H
+#endif // TEST_CONTEXT_H

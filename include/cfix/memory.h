@@ -26,4 +26,7 @@
         memset(X, 0, sizeof(*(X)));                                                                                    \
     } while (0)
 
+#define MIN(A, B) (((A) < (B)) ? (A) : (B))
+#define MAX(A, B) (((A) < (B)) ? (B) : (A))
+
 #endif // CFIX_MEMORY_H
