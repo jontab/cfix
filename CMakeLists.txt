@@ -5,6 +5,7 @@ set(CMAKE_C_FLAGS_DEBUG "-Wall -Werror -pedantic -O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-Wall -Werror -pedantic -O3")
 
 set(LIB_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/fix40/tag.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/acceptor.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/initiator.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp/transport.c
@@ -31,6 +32,7 @@ set(LIB_HEADERS
 set(TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/context.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/main.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_message.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_recv_chunker.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_send_chunker.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_tcp_acceptor.c
