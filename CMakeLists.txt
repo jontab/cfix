@@ -2,15 +2,18 @@ cmake_minimum_required(VERSION 3.5)
 project(cfix)
 
 set(LIBCFIX_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cfix/message.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cfix/ring.c)
 
 set(LIBCFIX_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/message.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/cfix/ring.h)
 
 set(TESTS_SOURCES
     ${LIBCFIX_SOURCES}
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/munit/munit.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/main.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_message.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit_ring.c)
 
 set(TESTS_HEADERS
