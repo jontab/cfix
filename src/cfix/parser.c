@@ -1,6 +1,7 @@
 #include "cfix/parser.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /******************************************************************************/
@@ -29,6 +30,7 @@ struct get_context_s
 int cfix_parser_handle_begin_string(cfix_parser_t *self, char *data_end, get_context_t *ctx);
 int cfix_parser_handle_body_length(cfix_parser_t *self, char *data_end, get_context_t *ctx);
 int cfix_parser_handle_checksum(cfix_parser_t *self, char *data_end, get_context_t *ctx);
+int cfix_parser_handle_body(cfix_parser_t *self, get_context_t *ctx, cfix_message_t *out);
 
 /******************************************************************************/
 /* Methods                                                                    */
@@ -54,6 +56,44 @@ int cfix_parser_get(cfix_parser_t *self, cfix_ring_t *buffer, cfix_message_t *ou
         ((result = cfix_parser_handle_checksum(self, context.begin_string_tag + size, &context)) < 0))
     {
         return result;
+    }
+
+    out->bytes = context.checksum_end - context.begin_string_tag;
+
+    *(context.body_length_tag - 1) = '\0';
+    *(context.body_start - 1) = '\0';
+    *(context.checksum_end - 1) = '\0';
+
+#if 0
+    fprintf(stdout, "bytes:        %zu\n", out->bytes);
+    fprintf(stdout, "ctx.bs_tag:   '%s'\n", context.begin_string_tag);
+    fprintf(stdout, "ctx.bs_value: '%s'\n", context.begin_string_value);
+    fprintf(stdout, "ctx.bl_tag:   '%s'\n", context.body_length_tag);
+    fprintf(stdout, "ctx.bl_value: '%s'\n", context.body_length_value);
+    fprintf(stdout, "ctx.bs:       '%s'\n", context.body_start);
+    fprintf(stdout, "ctx.ck_tag:   '%s'\n", context.checksum_tag);
+    fprintf(stdout, "ctx.ck_value: '%s'\n", context.checksum_value);
+#endif
+
+    if ((cfix_message_field_list_append(&out->header, 8, context.begin_string_value) < 0) ||
+        (cfix_message_field_list_append(&out->header, 9, context.body_length_value) < 0))
+    {
+    clean:
+        cfix_message_field_list_clear(&out->header);
+        cfix_message_field_list_clear(&out->body);
+        cfix_message_field_list_clear(&out->trailer);
+        cfix_ring_consume(buffer, out->bytes);
+        return CFIX_MEMORY;
+    }
+
+    if ((result = cfix_parser_handle_body(self, &context, out)) < 0)
+    {
+        return result;
+    }
+
+    if ((cfix_message_field_list_append(&out->trailer, 10, context.checksum_value) < 0))
+    {
+        goto clean;
     }
 
     return 0;
@@ -158,4 +198,72 @@ int cfix_parser_handle_checksum(cfix_parser_t *self, char *data_end, get_context
     {
         return CFIX_INCOMPLETE;
     }
+}
+
+int cfix_parser_handle_body(cfix_parser_t *self, get_context_t *ctx, cfix_message_t *out)
+{
+    char *last_value = NULL;
+    char *p = ctx->body_start;
+    while (p < ctx->checksum_tag)
+    {
+        char *equals = memchr(p, self->config.separator_tag_value, ctx->checksum_tag - p);
+        if (!equals)
+        {
+            return CFIX_INVALID_FIELD;
+        }
+
+        *equals = '\0';
+        int tag = atoi(p);
+        if (tag >= self->config.tag_table->size)
+        {
+            fprintf(stdout, "error: unknown tag: %d\n", tag);
+            return CFIX_INVALID_FIELD;
+        }
+
+        char *value = equals + 1;
+        char *soh;
+        if (self->config.tag_table->data[tag].is_data_type)
+        {
+            if (!last_value)
+            {
+                return CFIX_INVALID_FIELD;
+            }
+            
+            soh = value + atoi(last_value);
+        }
+        else
+        {
+            soh = memchr(value, self->config.separator_field, ctx->checksum_tag - value);
+        }
+        
+        if (!soh || (soh >= ctx->checksum_tag))
+        {
+            return CFIX_INVALID_FIELD;
+        }
+
+        cfix_message_field_list_t *section;
+        if (self->config.tag_table->data[tag].is_header_field)
+        {
+            section = &out->header;
+        }
+        else if (self->config.tag_table->data[tag].is_trailer_field)
+        {
+            section = &out->trailer;
+        }
+        else
+        {
+            section = &out->body;
+        }
+
+        *soh = '\0';
+        if (cfix_message_field_list_append(section, tag, value) < 0)
+        {
+            return CFIX_MEMORY;
+        }
+
+        last_value = value;
+        p = soh + 1;
+    }
+
+    return 0;
 }

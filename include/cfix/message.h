@@ -33,6 +33,7 @@ struct cfix_message_s
     cfix_message_field_list_t header;
     cfix_message_field_list_t body;
     cfix_message_field_list_t trailer;
+    size_t                    bytes;
 };
 
 /******************************************************************************/
