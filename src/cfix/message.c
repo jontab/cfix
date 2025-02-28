@@ -22,7 +22,7 @@ int cfix_message_field_list_reserve(cfix_message_field_list_t *self, size_t capa
     if (self->capacity < capacity)
     {
         size_t new_capacity = 2 * capacity + 7;
-        void  *new_data = realloc(self->data, new_capacity);
+        void  *new_data = realloc(self->data, new_capacity * sizeof(cfix_message_field_t));
         if (new_data)
         {
             self->capacity = new_capacity;

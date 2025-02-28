@@ -10,6 +10,8 @@
 #define CFIX_VALIDATE_BEGIN_STRING -2
 #define CFIX_INVALID_BODY_LENGTH   -3
 #define CFIX_VALIDATE_CHECKSUM     -4
+#define CFIX_MEMORY                -5
+#define CFIX_INVALID_FIELD         -6
 
 /******************************************************************************/
 /* Typedefs                                                                   */
