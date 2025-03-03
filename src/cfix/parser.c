@@ -96,6 +96,7 @@ int cfix_parser_get(cfix_parser_t *self, cfix_ring_t *buffer, cfix_message_t *ou
         goto clean;
     }
 
+    cfix_ring_consume(buffer, out->bytes);
     return 0;
 }
 
@@ -228,7 +229,7 @@ int cfix_parser_handle_body(cfix_parser_t *self, get_context_t *ctx, cfix_messag
             {
                 return CFIX_INVALID_FIELD;
             }
-            
+
             soh = value + atoi(last_value);
         }
         else

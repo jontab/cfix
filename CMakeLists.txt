@@ -23,6 +23,13 @@ set(TESTS_HEADERS
     ${LIBCFIX_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/munit/munit.h)
 
+set(BENCHMARK_SOURCES
+    ${LIBCFIX_SOURCES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/benchmark/main.c)
+
+set(BENCHMARK_HEADERS
+    ${LIBCFIX_HEADERS})
+
 ################################################################################
 # cfix-tests                                                                   #
 ################################################################################
@@ -40,3 +47,11 @@ target_compile_options(cfix-tests PUBLIC -O0 -g -Wall -Werror -pedantic -std=gnu
 ################################################################################
 # cfix-benchmark                                                               #
 ################################################################################
+
+add_executable(cfix-benchmark ${BENCHMARK_SOURCES} ${BENCHMARK_HEADERS})
+
+target_include_directories(cfix-benchmark PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+target_compile_options(cfix-tests PUBLIC -O3 -Wall -Werror -pedantic -std=gnu11)
