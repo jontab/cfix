@@ -1,0 +1,7 @@
+sessions:
+  - id: MySession
+    sender_comp_id: SenderId
+    target_comp_id: TargetId
+  - id: MySession2
+    sender_comp_id: SenderId2
+    target_comp_id: TargetId2
